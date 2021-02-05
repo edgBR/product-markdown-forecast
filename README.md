@@ -25,11 +25,9 @@ The two datasets (more detailed explanations in the Appendix below):
 - Product_table.csv, which contains generic information for each variant of each article. NB: An
 “article” is a product with a particular color/print. A “variant” is a version of an article with a
 particular size. For instance:
-o Product 512787 is a V-neck sweater
-o Article 512787004 is a red V-neck sweater
-o Variants 512787004003, 512787004004 and 512787004006 are three different
-sizes of the red V-neck sweater. Notice how the 9 first numbers of the variant ID is the
-article ID
+  - Product 512787 is a V-neck sweater
+  - Article 512787004 is a red V-neck sweater
+  - Variants 512787004003, 512787004004 and 512787004006 are three different sizes of the red V-neck sweater. Notice how the 9 first numbers of the variant ID is the article ID.
 
 # Task
 
