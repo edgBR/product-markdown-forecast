@@ -65,96 +65,38 @@ argument_parser <- parse_args(OptionParser(option_list = option_list))
 
 ### We load the 2 dataframes
 
-sales_data <- dataImport(input_path = argument_parser$input_data,
+sales_data <- data_import(input_path = argument_parser$input_data,
                          file_name = argument_parser$sales_file)
 
-product_data <- dataImport(input_path = argument_parser$input_data,
+product_data <- data_import(input_path = argument_parser$input_data,
                            file_name = argument_parser$product_file)
 
 # BASIC SUMMARIZATION -----------------------------------------------------------------
 
-summarized_index_counts <- product_data %>%
-  group_by(index_group_name) %>%
-  summarise(index_count = n()) %>%
-  arrange(index_count)
-
-summarized_deparment_counts <- product_data %>%
-  group_by(department_name) %>%
-  summarise(department_count = n()) %>%
-  arrange(department_count)
-
-summarized_product_code_counts <- product_data %>%
-  group_by(product_code) %>%
-  summarise(product_count = n()) %>%
-  arrange(product_count)
-
-summarized_product_type_counts <- product_data %>%
-  group_by(product_type_name) %>%
-  summarise(product_type_counts = n())
+summary_list <- hierarchical_summarizer(product_data)
 
 
-# TEMPORAL AUGMENTATION AND FEATURE ENGINEERING-----------------------------------------------------------------
+# TEMPORAL, MANUAL FEATURES AND AUXILIAR DATA FRAMES FOR PLOTTING ---------------------------
 
-sales_data <- sales_data %>%
-  mutate(article = as.numeric(str_sub(
-    variant, start = 1, end = 9
-  ))) %>%
-  mutate(product_code = as.numeric(str_sub(
-    variant, start = 1, end = 6
-  ))) %>%
-  mutate(net_amount=ifelse(purchases == 0, 0, net_amount), # removing meaningless NANs
-         gross_amount=ifelse(purchases == 0, 0, gross_amount)) %>%  # removing meaningless NANs
-  tk_augment_timeseries_signature(.date_var = date) %>%
-  select(
-    -c(
-      index.num,
-      diff,
-      year,
-      year.iso,
-      half,
-      quarter,
-      qday,
-      month,
-      month.xts,
-      month.lbl,
-      hour,
-      minute,
-      second,
-      hour12,
-      am.pm,
-      wday.xts,
-      wday.lbl,
-      week.iso,
-      week2,
-      week3,
-      week4
-    )
-  ) %>%
-  mutate(is_markdown = ifelse(mweek == 1, 0, 1)) %>% #MANUAL ONE HOT ENCODING
-  mutate(unitary_net_amount = ifelse(is.na(net_amount), NA, net_amount/purchases)) %>% 
-  mutate(unitary_gross_amount = ifelse(is.na(net_amount), NA, net_amount/purchases)) %>% 
-  mutate(discount = ifelse(purchases != 0, (1-(net_amount/gross_amount))*100, 0))
+sales_data_processed <- sales_processor(sales_data)
+
+sales_data_joined <- sales_data_processed %>% 
+  left_join(product_data) %>% 
+  mutate(article = as.character(article),
+         variant = as.character(variant),
+         product_code = as.character(product_code)) %>% 
+  group_by(index_group_name, department_name, product_type_name, 
+           product_code, variant, date)
 
 
-
-sales_data_joined <- sales_data %>% left_join(product_data)
-
-na_isolation <- sales_data_joined %>% 
-  filter(is.na(net_amount))
-
-missing_variants_product_codes <- na_isolation$product_code %>% unique()
-
-missing_variants_product_codes_data <- sales_data_joined %>% 
-  filter(product_code %in% missing_products)
-
-a <- missing_variants_product_codes_data %>% 
-  group_by(product_type_name, is_markdown, week) %>% 
+sales_data_summarized <- sales_data_joined %>% 
+  group_by(index_group_name, department_name, product_type_name, 
+           product_code, variant, week, is_markdown) %>% 
   summarise(
-    median_unitary_net_amount = median(unitary_net_amount, na.rm = TRUE),
-    median_gross_amount = median(unitary_gross_amount, na.rm = TRUE),
-    median_discount = median(discount, na.rm = TRUE)
+    sum_of_purchases = sum(purchases, na.rm = TRUE),
+    sum_of_net_amount = sum(net_amount, na.rm = TRUE),
+    sum_of_gross_amount = sum(gross_amount, na.rm = TRUE)
   )
-
 
 sales_data_joined_pivotted <- sales_data_joined %>%
   pivot_longer(
@@ -162,6 +104,28 @@ sales_data_joined_pivotted <- sales_data_joined %>%
     names_to = "variable",
     values_to = "value"
   )
+
+# NA ANALYSIS FOR NET AMOUNT-----------------------------------------------------------------
+
+
+na_isolation <- sales_data_joined %>% 
+  filter(is.na(net_amount))
+
+missing_variants_product_codes <- na_isolation$product_code %>% unique()
+
+missing_sales_data <- sales_data_joined %>% 
+  filter(product_code %in% missing_variants_product_codes)
+
+missing_data_summary <- missing_sales_data %>% 
+  group_by(index_group_name, department_name, product_type_name, is_markdown, week) %>% 
+  summarise(
+    median_unitary_net_amount = median(unitary_net_amount, na.rm = TRUE),
+    median_gross_amount = median(unitary_gross_amount, na.rm = TRUE),
+    median_discount = median(discount, na.rm = TRUE)
+  )
+
+
+# TSIBBLE FORMAT-----------------------------------------------------------------
 
 sales_tsibble <- sales_data_joined  %>% 
   as_tsibble(key = c(index_group_name, department_name, 
@@ -177,12 +141,15 @@ sales_tsibble_by_index_group <- sales_tsibble %>%
   summarise(net_amount = sum(net_amount),
             purchases = sum(purchases))
 
-gap_count_sales <- sales_tsibble %>% count_gaps(.full = TRUE)
+gap_count_sales <- sales_tsibble %>% 
+  count_gaps(.full = TRUE)
 
-gap_count_sales_by_index_group <- sales_tsibble_by_index_group %>% count_gaps(.full = TRUE)
+gap_count_sales_by_index_group <- sales_tsibble_by_index_group %>% 
+  count_gaps(.full = TRUE)
 
 
-gap_count_sales_by_product_type <- sales_tsibble_by_product_type %>% count_gaps(.full = TRUE)
+gap_count_sales_by_product_type <- sales_tsibble_by_product_type %>% 
+  count_gaps(.full = TRUE)
 
 # EDA -----------------------------------------------------------------
 

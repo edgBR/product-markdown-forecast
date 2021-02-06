@@ -2,7 +2,7 @@ library(vroom)
 
 
 
-dataImport <- function(input_path, file_name) {
+data_import <- function(input_path, file_name) {
   data_out <- tryCatch(
     vroom(file = paste(input_path, file_name, sep="/")), 
     error = function(e) {e}, 
