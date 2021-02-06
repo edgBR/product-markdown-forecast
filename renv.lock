@@ -18,7 +18,7 @@
     }
   },
   "Python": {
-    "Version": "3.8.3",
+    "Version": "3.8.7",
     "Type": "virtualenv"
   }
 }
