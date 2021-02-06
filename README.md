@@ -55,3 +55,64 @@ data. Does it changes your plan of action? How?
   - Purchases: number of item sold
 - Product_table.csv:
   -Index_group_name, department name and product_type_name represent three levels of granularity describing the product (index being the higher-lever one and product_type_name the lowest)
+  
+  
+# Reproducibility
+  
+This project has been developed in a windows machine and using R and Python for different parts of the task. When trying to open the R project it is possible that you get the following warning:
+  
+  
+``` r
+* Creating virtual environment 'renv-python-3.8.7' ... Error: invalid version specification ‘No se encontró Python; ejecuta sin argumentos para instalar desde Microsoft Store o deshabilita este acceso directo en Configuración > Administrar alias de ejecución de la aplicación.’
+Además: Warning message:
+In system2(python, args, stdout = TRUE, stderr = TRUE) :
+  comando ejecutado '"C:/Users/Asus/AppData/Local/Microsoft/WindowsApps/python3.exe" -c "from platform import python_version; print(python_version())"' tiene estatus 9009
+Traceback (most recent calls last):
+19: source("renv/activate.R")
+18: withVisible(eval(ei, envir))
+17: eval(ei, envir)
+16: eval(ei, envir)
+15: local(...) at activate.R#2
+14: eval.parent(substitute(eval(quote(expr), envir)))
+13: eval(expr, p)
+12: eval(expr, p)
+11: eval(quote(...), new.env())
+10: eval(quote(...), new.env())
+ 9: if (renv_bootstrap_load(project, libpath, version))
+      return(TRUE) at activate.R#410
+ 8: renv::load(project) at activate.R#394
+ 7: renv_load_python(project, lockfile$Python)
+ 6: renv_load_python_env(fields, renv_use_python_virtualenv)
+ 5: loader(project = project, version = version, name = name)
+ 4: renv_python_virtualenv_create(python, path)
+ 3: numeric_version(version)
+ 2: .make_numeric_version(x, strict, .standard_regexps()$valid_numeric_version)
+ 1: stop(gettextf("invalid version specification %s", paste(sQuote(unique(x[!ok])), 
+        collapse = ", ")), call. = FALSE, domain = NA)
+```
+
+This is because renv is not able to find your python installation. Please ensure that Python was added to the PATH environment variable: https://geek-university.com/python/add-python-to-the-windows-path/.
+
+After that, you will restore the python environment by running:
+
+```r
+renv::use_python(python="C:/Users/Asus/AppData/Local/Programs/Python/Python38/python.exe", type = "virtualenv")
+```
+
+Python dependencies contain the gluon-ts library: https://github.com/awslabs/gluon-ts, which in windows requires the VS Code Build tools. If VS Code Build tools are not installed you might receive the following error when restoring the python environment:
+
+```python
+    Running setup.py install for ujson: finished with status 'error'
+    ERROR: Command errored out with exit status 1:
+     command: 'C:\Users\Asus\PRODUC~1\renv\python\VIRTUA~1\RENV-P~1.7\Scripts\python.exe' -u -c 'import sys, setuptools, tokenize; sys.argv[0] = '"'"'C:\\Users\\Asus\\AppData\\Local\\Temp\\pip-install-_4abze5n\\ujson\\setup.py'"'"'; __file__='"'"'C:\\Users\\Asus\\AppData\\Local\\Temp\\pip-install-_4abze5n\\ujson\\setup.py'"'"';f=getattr(tokenize, '"'"'open'"'"', open)(__file__);code=f.read().replace('"'"'\r\n'"'"', '"'"'\n'"'"');f.close();exec(compile(code, __file__, '"'"'exec'"'"'))' install --record 'C:\Users\Asus\AppData\Local\Temp\pip-record-w7s20iz_\install-record.txt' --single-version-externally-managed --compile --install-headers 'C:\Users\Asus\PRODUC~1\renv\python\VIRTUA~1\RENV-P~1.7\include\site\python3.8\ujson'
+         cwd: C:\Users\Asus\AppData\Local\Temp\pip-install-_4abze5n\ujson\
+    Complete output (6 lines):
+    Warning: 'classifiers' should be a list, got type 'filter'
+    running install
+    running build
+    running build_ext
+    building 'ujson' extension
+    error: Microsoft Visual C++ 14.0 is required. Get it with "Build Tools for Visual Studio": https://visualstudio.microsoft.com/downloads/
+ ```
+ 
+ You can find the download link here: https://visualstudio.microsoft.com/es/visual-cpp-build-tools/
