@@ -59,7 +59,7 @@ data. Does it changes your plan of action? How?
   
 # Reproducibility
   
-This project has been developed in a windows machine and using R and Python for different parts of the task. When trying to open the R project it is possible that you get the following warning:
+This project has been developed in a windows machine using R and Python for different parts of the task. When trying to open the R project it is possible that you get the following warning:
   
   
 ``` r
@@ -91,7 +91,7 @@ Traceback (most recent calls last):
         collapse = ", ")), call. = FALSE, domain = NA)
 ```
 
-This is because renv is not able to find your python installation. Please ensure that Python was added to the PATH environment variable: https://geek-university.com/python/add-python-to-the-windows-path/.
+This is because [renv](https://rstudio.github.io/renv/articles/python.html) is not able to find your python installation. Please ensure that Python was added to the PATH environment variable: https://geek-university.com/python/add-python-to-the-windows-path/.
 
 After that, you will restore the python environment by running:
 
@@ -99,7 +99,7 @@ After that, you will restore the python environment by running:
 renv::use_python(python="C:/Users/Asus/AppData/Local/Programs/Python/Python38/python.exe", type = "virtualenv")
 ```
 
-Python dependencies contain the gluon-ts library: https://github.com/awslabs/gluon-ts, which in windows requires the VS Code Build tools. If VS Code Build tools are not installed you might receive the following error when restoring the python environment:
+Python dependencies contain [gluon-ts](https://github.com/awslabs/gluon-ts), which in windows requires the VS Code Build tools. If VS Code Build tools are not installed you might receive the following error when restoring the python environment:
 
 ```python
     Running setup.py install for ujson: finished with status 'error'
@@ -115,4 +115,17 @@ Python dependencies contain the gluon-ts library: https://github.com/awslabs/glu
     error: Microsoft Visual C++ 14.0 is required. Get it with "Build Tools for Visual Studio": https://visualstudio.microsoft.com/downloads/
  ```
  
- You can find the download link here: https://visualstudio.microsoft.com/es/visual-cpp-build-tools/
+ You can find the download link [here](https://visualstudio.microsoft.com/es/visual-cpp-build-tools/). After everything is ready you only need to run:
+ 
+ ```r
+renv::restore()
+```
+
+Which in the background will install the dependencies from the requirements.txt file available in this repository
+ 
+ ``` python
+ Successfully installed Pillow-8.1.0 gluonts-0.6.5 graphviz-0.8.4 hijri-converter-2.1.1 holidays-0.10.5.2 idna-2.6 kiwisolver-1.3.1 korean-lunar-calendar-0.2.1 matplotlib-3.3.4 mxnet-1.7.0.post1 numpy-1.16.6 pandas-1.2.1 pyparsing-2.4.7 python-dateutil-2.8.1 requests-2.18.4 toolz-0.11.1 tqdm-4.56.0 ujson-1.35 urllib3-1.22
+WARNING: You are using pip version 20.2.3; however, version 21.0.1 is available.
+You should consider upgrading via the 'C:\Users\Asus\PRODUC~1\renv\python\VIRTUA~1\RENV-P~1.7\Scripts\python.exe -m pip install --upgrade pip' command.
+* Restored Python packages from 'C:/Users/Asus/product-markdown-forecast/requirements.txt'.
+ ```
