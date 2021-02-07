@@ -375,6 +375,22 @@ ggplot(
   xlab("Total purchases") +
   ylab("Product Type Name")
 
+
+ggplot(
+  sales_data_joined %>% group_by(product_type_name, index_group_name, is_markdown) %>%
+    summarise(sum_of_purchases = sum(purchases, na.rm = TRUE)),
+  aes(
+    x = reorder(product_type_name,+sum_of_purchases),
+    y = sum_of_purchases,
+    fill = index_group_name
+  )
+) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(.~is_markdown) +
+  xlab("Total purchases") +
+  ylab("Product Type Name")
+
 # NA ANALYSIS FOR NET AMOUNT-----------------------------------------------------------------
 
 ### We investigate the NANs in net amount as it seems a relevant feature in the EDA
@@ -470,7 +486,7 @@ vroom_write(sales_data_joined_uplift_week2,
 uplift1_feat <- data_import(argument_parser$output_data,
                             file_name = 'feature_importance_xgboost_uplift1.csv') %>% 
   t() %>% 
-  s.data.frame() %>% 
+  as.data.frame() %>% 
   tibble::rownames_to_column(., "feature_name") %>% 
   filter(V1!=0)
 
