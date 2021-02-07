@@ -42,8 +42,8 @@ markdown week and the sales during a week without markdown close in time.
 2) Is it possible to predict the uplift for the first week of markdowns with the information you
 have? What would be the key variables? (please **do not take week** 2 into account in this
 question)
-3) Suggest a specific plan of action for markdowns in October 2018, based on your observations
-and models on week 1. If you had data on stock (number of items in inventory), how would
+3) ~~Suggest a specific plan of action for markdowns in October 2018, based on your observations
+and models on week 1~~. If you had data on stock (number of items in inventory), how would
 you leverage them? (please **do not take week 2** into account in this question)
 4) (Extra point question) Please answer questions 2) and 3) considering both week 1 and week 2
 data. Does it changes your plan of action? How?

@@ -4,7 +4,7 @@ library(tidyr)
 library(tsibble)
 library(feasts)
 
-hierarchical_summarizer <- function(df_in, name_vector) {
+hierarchical_product_summarizer <- function(df_in, name_vector) {
   list_df <- tryCatch({
     list(
       summarized_index_counts <- df_in %>%
